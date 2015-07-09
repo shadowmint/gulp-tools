@@ -1,0 +1,27 @@
+{
+  "name": "gulp-tools",
+  "version": "0.0.1",
+  "description": "Gulp utility helpers in es6",
+  "license": "MIT",
+  "repository": "shadowmint/gulp-tools",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "main": "./lib/plugin",
+  "files": [
+    "lib",
+    "README.md"
+  ],
+  "dependencies": {
+    "buffertools": "^2.1.2",
+    "gulp-util": "^3.0.0",
+    "through2": "^0.6.1",
+    "vinyl": "^0.4.6"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-babel": "^5.1.0",
+    "gulp-nodeunit": "0.0.5",
+    "run-sequence": "^1.1.1"
+  }
+}
