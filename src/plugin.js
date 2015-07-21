@@ -34,19 +34,14 @@ export class Plugin {
    * @param callback The (err, success) callback.
    */
   handle_stream(file, enc, callback) {
-    console.log("STREAM");
     var buffer = [];
     file.contents.on('error', (err) => {
-      console.log("Error");
-      console.log(err);
       var err = new gutil.PluginError(this.name, "Invalid stream: " + err, {fileName: file.path});
       callback(err);
     });
     file.contents.on('readable', () => {
-      console.log("readable");
       while(true) {
         var read = file.contents.read();
-        console.log(read);
         if (read != null) {
           buffer.push(read);
         }
@@ -57,7 +52,6 @@ export class Plugin {
         }
       }
     });
-    console.log("waiting...");
   }
 
   /**
