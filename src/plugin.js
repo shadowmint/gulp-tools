@@ -36,6 +36,7 @@ export class Plugin {
   handle_stream(file, enc, callback) {
     console.log("STREAM");
     var buffer = [];
+    var completed = false;
     file.contents.on('error', (err) => {
       console.log("Error");
       console.log(err);
@@ -43,16 +44,35 @@ export class Plugin {
       callback(err);
     });
     file.contents.on('readable', () => {
-      console.log("readable");
+      console.log("***** readable on target");
+      console.log(file);
+
+      // Sometimes we get weird readable events on closed buffers.
+      if (completed) {
+        return;
+      }
+
+      // Normally, convert stream to buffer and return.
       while(true) {
+        try {
         var read = file.contents.read();
         console.log(read);
+        console.log("ok1");
         if (read != null) {
+        console.log("ok2");
           buffer.push(read);
         }
         else {
+        console.log("ok3");
+          completed = true;
           file.contents = buffertools.concat.apply(null, buffer);
+          console.log("Completed file with: " + file.contents);
           this.handle_buffer(file, enc, callback);
+          break;
+        }
+        }
+        catch(err) {
+          console.log(err);
           break;
         }
       }
@@ -70,6 +90,7 @@ export class Plugin {
    */
   handle_buffer(file, enc, callback) {
     var content = sutils.convert_to_string(file.contents, enc);
+    console.log(content);
     this.handle_string(file, content, callback);
   }
 
@@ -105,13 +126,21 @@ export class Plugin {
     return function(opts) {
       self.configure(opts);
       return through.obj(function(file, enc, callback) {
+        console.log("New file~");
+        console.log(file);
+        console.log(file.isNull());
+        console.log(file.isStream());
+        console.log(file.isBuffer());
         if (file.isNull()) {
+          console.log("As null");
           self.handle_null(file, enc, callback) ;
         }
         else if (file.isStream()) {
+          console.log("As stream");
           self.handle_stream(file, enc, callback);
         }
         else if (file.isBuffer()) {
+          console.log("As buffer");
           self.handle_buffer(file, enc, callback);
         }
       }, function (callback) {
@@ -130,6 +159,8 @@ export class Plugin {
    */
   file(target, path, cwd, base, contents) {
     var fp = new File({ path: path, cwd: cwd, base: base, contents: new Buffer(contents) });
+    console.log("New file");
+    console.log(fp);
     target.push(fp)
   }
 
