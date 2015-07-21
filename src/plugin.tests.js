@@ -44,6 +44,21 @@ export function test_plugin_with_buffer(test) {
   stream.end();
 }
 
+export function test_plugin_with_stream(test) {
+  test.expect(1);
+
+  var file = new File({ path: 'foo', cwd: 'tests/', base: 'tests/', contents: fs.createReadStream(__dirname + '/../gulpfile.js') });
+  var plugin = new Test().handler();
+  var stream = plugin();
+  read_from_stream(stream, function(value) {
+    test.ok(value == "Hello");
+    test.done();
+  });
+
+  stream.write(file);
+  stream.end();
+}
+
 export function test_generator(test) {
   test.expect(1);
 
