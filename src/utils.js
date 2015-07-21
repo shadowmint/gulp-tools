@@ -17,21 +17,34 @@ function safe(x) {
  */
 export function read_from_stream(stream, callback) {
   var bufs = [];
+  var foo = Math.random();
+  console.log("Callback bound " + foo);
   stream.on('readable', safe(function() {
-    var read = stream.read();
-    if (read) {
-      if (read.contents) {
-        bufs.push(read.contents);
+    console.log("Readable on stream " + foo);
+    console.log(callback.toString());
+    while(true) {
+      var read = stream.read();
+      if (read) {
+        if (read.contents) {
+          bufs.push(read.contents);
+        }
+        else {
+          bufs.push(read);
+        }
       }
       else {
-        bufs.push(read);
+        break;
       }
     }
   }));
   stream.on('end', safe(function() {
+    console.log("On end...? " + foo);
+    console.log(callback.toString());
     var all = buffertools.concat.apply(null, bufs);
     var decoder = new StringDecoder('utf8');
     var content = decoder.write(all);
+    console.log("Content: " + content);
+    console.log(callback.toString());
     callback(content);
   }));
 }
