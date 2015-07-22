@@ -19,13 +19,11 @@ class GenTest extends Plugin {
     this.all = "";
   }
   handle_string(file, value, callback) {
-    console.log("Found partial: " + value);
     this.all += value;
     callback(); // Consume files, don't forward them.
   }
   handle_close(target, callback) {
     // Generate a file from the combined input
-    console.log("Close event");
     this.file(target, 'out.txt', './', './', this.all);
     callback();
   }
@@ -37,7 +35,7 @@ export function test_plugin_with_buffer(test) {
   var file = new File({ path: 'foo', cwd: 'tests/', base: 'tests/', contents: new Buffer("Hi") });
   var plugin = new Test().handler();
   var stream = plugin();
-  read_from_stream(stream, function(value) {
+  read_from_stream(stream, 'utf8', function(value) {
     test.ok(value == "Hello");
     test.done();
   });
@@ -52,7 +50,7 @@ export function test_plugin_with_stream(test) {
   var file = new File({ path: 'other', cwd: 'tests/', base: 'tests/', contents: fs.createReadStream(__dirname + '/../gulpfile.js') });
   var plugin = new Test().handler();
   var stream = plugin();
-  read_from_stream(stream, function(value) {
+  read_from_stream(stream, 'utf8', function(value) {
     test.ok(value == "Hello");
     test.done();
   });
@@ -63,25 +61,17 @@ export function test_plugin_with_stream(test) {
 
 export function test_generator(test2) {
   test2.expect(1);
-  console.log("--------------------------\n\n\n");
 
   var file1 = new File({ path: 'foo_hello', cwd: 'tests/', base: 'tests/', contents: new Buffer("Hello") });
   var file2 = new File({ path: 'bar_hello', cwd: 'tests/', base: 'tests/', contents: new Buffer("World") });
   var plugin = new GenTest().handler();
   var stream = plugin();
-  read_from_stream(stream, function(value) {
-    console.log("Read ok");
+  read_from_stream(stream, 'utf8', function(value) {
     test2.ok(value == "HelloWorld");
     test2.done();
-    console.log("Completed test");
   });
 
-  try {
-    stream.write(file1);
-    stream.write(file2);
-    stream.end();
-  }
-  catch(err) {
-    console.log(err);
-  }
+  stream.write(file1);
+  stream.write(file2);
+  stream.end();
 }

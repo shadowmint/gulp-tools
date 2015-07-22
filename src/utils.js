@@ -15,13 +15,10 @@ function safe(x) {
  * @param stream A stream to read from.
  * @param callback The callback to run when done.
  */
-export function read_from_stream(stream, callback) {
+export function read_from_stream(stream, enc, callback) {
   var bufs = [];
   var foo = Math.random();
-  console.log("Callback bound " + foo);
   stream.on('readable', safe(function() {
-    console.log("Readable on stream " + foo);
-    console.log(callback.toString());
     while(true) {
       var read = stream.read();
       if (read) {
@@ -38,13 +35,9 @@ export function read_from_stream(stream, callback) {
     }
   }));
   stream.on('end', safe(function() {
-    console.log("On end...? " + foo);
-    console.log(callback.toString());
     var all = buffertools.concat.apply(null, bufs);
-    var decoder = new StringDecoder('utf8');
+    var decoder = new StringDecoder(enc);
     var content = decoder.write(all);
-    console.log("Content: " + content);
-    console.log(callback.toString());
     callback(content);
   }));
 }
