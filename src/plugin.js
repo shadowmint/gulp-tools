@@ -121,14 +121,12 @@ export class Plugin {
     if (this.options[key] === undefined) {
       this.options[key] = default_value;
     }
-    else {
-      if (!validator) {
-        validator = (v) => { return v ? true : false; };
-      }
-      if (!validator(this.options[key])) {
-        var err = new gutil.PluginError(this.name, "Invalid option: " + key + ": " + this.options[key]);
-        throw err;
-      }
+    if (!validator) {
+      validator = (v) => { return v ? true : false; };
+    }
+    if (!validator(this.options[key])) {
+      var err = new gutil.PluginError(this.name, "Invalid option: " + key + ": " + this.options[key]);
+      throw err;
     }
   }
 }
