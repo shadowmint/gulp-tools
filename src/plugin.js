@@ -10,6 +10,7 @@ export class Plugin {
   /** Create a new plugin with the given name */
   constructor(name) {
     this.name = name;
+    this.read = true;
     this.options = {};
   }
 
@@ -57,6 +58,14 @@ export class Plugin {
   }
 
   /**
+   * Handle a file without explicitly converting to a string.
+   * To avoid reading at all use read = false and set gulp to { read: false }
+   */
+  handle_file(file, enc) {
+    // Default to doing nothing
+  }
+
+  /**
    * Process some string value; this is the default plugin action.
    * If you don't override handle_buffer() and handle_stream(), implement this.
    * @param file The vinyl file object associated.
@@ -92,10 +101,12 @@ export class Plugin {
           self.handle_null(file, enc, callback) ;
         }
         else if (file.isStream()) {
-          self.handle_stream(file, enc, callback);
+          self.handle_file(file, enc);
+          self.read ? self.handle_stream(file, enc, callback) : callback();
         }
         else if (file.isBuffer()) {
-          self.handle_buffer(file, enc, callback);
+          self.handle_file(file, enc);
+          self.read ? self.handle_buffer(file, enc, callback) : callback();
         }
       }, function (callback) {
         self.handle_close(this, callback);
@@ -116,7 +127,17 @@ export class Plugin {
     target.push(fp)
   }
 
-  /** Apply a default value if an option is not present */
+  /**
+   * Apply a default value if an option is not present
+   * To use, override configure:
+   *
+   *  configure(options) {
+   *    this.options = options ? options : {};
+   *    this.option('paths', ['a']);
+   *    this.option('method', null, (v) => { return v != null; });
+   *  }
+   *
+   */
   option(key, default_value, validator) {
     if (this.options[key] === undefined) {
       this.options[key] = default_value;
