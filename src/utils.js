@@ -1,5 +1,4 @@
 import {StringDecoder} from 'string_decoder';
-import buffertools from 'buffertools';
 
 /** Safe handler; log exceptions */
 function safe(x) {
@@ -35,7 +34,7 @@ export function read_from_stream(stream, enc, callback) {
     }
   }));
   stream.on('end', safe(function() {
-    var all = buffertools.concat.apply(null, bufs);
+    var all = Buffer.concat(bufs);
     var decoder = new StringDecoder(enc);
     var content = decoder.write(all);
     callback(content);

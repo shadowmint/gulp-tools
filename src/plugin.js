@@ -2,7 +2,6 @@ import gutil from 'gulp-util';
 import through  from 'through2';
 import File from 'vinyl';
 import * as sutils from './utils';
-import buffertools from 'buffertools';
 
 /** A simple 'text' based processing plugin base */
 export class Plugin {
