@@ -4,7 +4,10 @@ import {StringDecoder} from 'string_decoder';
 function safe(x) {
   return function() {
     try { x.apply(null, arguments); } catch(ex) {
-      console.log(ex.stack);
+      console.log(ex);
+      if (ex.stack) {
+        console.log(ex.stack);
+      }
     }
   };
 };
