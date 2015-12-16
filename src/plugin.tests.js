@@ -1,15 +1,26 @@
 import fs from 'fs';
 import File from 'vinyl';
+import gutil from 'gulp-util';
 import {Plugin} from './plugin';
-import {read_from_stream} from './utils';
+import {read_from_stream, debug} from './utils';
+
+// Debug mode
+// debug();
 
 class Test extends Plugin {
-  constructor() {
+  constructor(fail) {
     super('gulp-test');
+    this.failure = fail;
   }
   handle_string(file, value, callback) {
-    file.contents = new Buffer("Hello");
-    callback(null, file);
+    if (!this.failure) {
+      file.contents = new Buffer("Hello");
+      callback(null, file);
+    }
+    else {
+      var error = new gutil.PluginError(this.name, value, {fileName: file.path});
+      callback(error);
+    }
   }
 }
 
@@ -51,6 +62,24 @@ export function test_plugin_with_buffer(test) {
 
   stream.write(file);
   stream.end();
+}
+
+export function test_plugin_with_error(test) {
+  try {
+    var file = new File({ path: 'foo', cwd: 'tests/', base: 'tests/', contents: new Buffer("Hi") });
+    var plugin = new Test(true).handler();
+    var stream = plugin();
+    read_from_stream(stream, 'utf8', function(value) {
+      test.ok(false);  // Unreachable
+    });
+
+    stream.write(file);
+    stream.end();
+  }
+  catch(err) {
+    test.ok(true);
+    test.done();
+  }
 }
 
 export function test_plugin_with_stream(test) {
