@@ -1,6 +1,6 @@
 {
   "name": "gulp-tools",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Gulp utility helpers in es6",
   "license": "MIT",
   "repository": "shadowmint/gulp-tools",
