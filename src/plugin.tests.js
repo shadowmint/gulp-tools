@@ -85,7 +85,7 @@ export function test_plugin_with_error(test) {
 export function test_plugin_with_stream(test) {
   test.expect(1);
 
-  var file = new File({ path: 'other', cwd: 'tests/', base: 'tests/', contents: fs.createReadStream(__dirname + '/../gulpfile.js') });
+  var file = new File({ path: 'other', cwd: 'tests/', base: 'tests/', contents: fs.createReadStream(__dirname + '/../gulpfile.babel.js') });
   var plugin = new Test().handler();
   var stream = plugin();
   read_from_stream(stream, 'utf8', function(value) {

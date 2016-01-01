@@ -20,8 +20,9 @@ export class Plugin {
    * @param file The vinyl file object associated.
    * @param value The null target.
    * @param callback The (err, success) callback.
+   * @param fstream The stream, to push additional files through.
    */
-  handle_null(file, value, callback) {
+  handle_null(file, value, callback, fstream) {
     callback();
   }
 
@@ -32,14 +33,15 @@ export class Plugin {
    * @param file The vinyl file object associated.
    * @param enc The file encoding string.
    * @param callback The (err, success) callback.
+   * @param fstream The stream, to push additional files through.
    */
-  handle_stream(file, enc, callback) {
+  handle_stream(file, enc, callback, fstream) {
     file.contents.on('error', (err) => {
       var err = new gutil.PluginError(this.name, "Invalid stream: " + err, {fileName: file.path});
       callback(err);
     });
     sutils.read_from_stream(file.contents, enc, (content) => {
-      this.handle_string(file, content, callback);
+      this.handle_string(file, content, callback, fstream);
     });
   }
 
@@ -50,17 +52,21 @@ export class Plugin {
    * @param file The vinyl file object associated.
    * @param enc The file encoding string.
    * @param callback The (err, success) callback.
+   * @param fstream The stream, to push additional files through.
    */
-  handle_buffer(file, enc, callback) {
+  handle_buffer(file, enc, callback, fstream) {
     var content = sutils.convert_to_string(file.contents, enc);
-    this.handle_string(file, content, callback);
+    this.handle_string(file, content, callback, fstream);
   }
 
   /**
    * Handle a file without explicitly converting to a string.
    * To avoid reading at all use read = false and set gulp to { read: false }
+   * @param The file object
+   * @param The encoding
+   * @param fstream The stream, to push additional files through.
    */
-  handle_file(file, enc) {
+  handle_file(file, enc, fstream) {
     // Default to doing nothing
   }
 
@@ -70,17 +76,18 @@ export class Plugin {
    * @param file The vinyl file object associated.
    * @param value The raw string value.
    * @param callback The (err, success) callback.
+   * @param fstream The stream, to push additional files through.
    */
-  handle_string(file, value, callback) {
+  handle_string(file, value, callback, fstream) {
     throw new Error('Not implemented');
   }
 
   /**
    * Override this handle stream completion if required
-   * @param target The through2 target
+   * @param fstream The through2 target
    * @param callback The callback to invoke when done.
    */
-  handle_close(target, callback) {
+  handle_close(fstream, callback) {
     callback();
   }
 
@@ -97,15 +104,15 @@ export class Plugin {
       self.configure(opts);
       return through.obj(function(file, enc, callback) {
         if (file.isNull()) {
-          self.handle_null(file, enc, callback) ;
+          self.handle_null(file, enc, callback, this);
         }
         else if (file.isStream()) {
-          self.handle_file(file, enc);
-          self.read ? self.handle_stream(file, enc, callback) : callback();
+          self.handle_file(file, enc, this);
+          self.read ? self.handle_stream(file, enc, callback, this) : callback();
         }
         else if (file.isBuffer()) {
-          self.handle_file(file, enc);
-          self.read ? self.handle_buffer(file, enc, callback) : callback();
+          self.handle_file(file, enc, this);
+          self.read ? self.handle_buffer(file, enc, callback, this) : callback();
         }
       }, function (callback) {
         self.handle_close(this, callback);
